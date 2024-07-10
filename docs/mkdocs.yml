@@ -1,1 +1,28 @@
-site_name: My Docs
+site_name: Demo Exercises
+plugins:
+  - exercises
+  - enumerate-headings
+theme:
+  name: material
+  icon:
+    admonition:
+      exercise: octicons/mortar-board-16
+      solution: octicons/trophy-16
+      hint: octicons/light-bulb-16
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+watch:
+  - ../mkdocs_exercises
