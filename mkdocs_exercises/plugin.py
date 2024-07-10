@@ -7,7 +7,8 @@ from mkdocs import utils as mkdocs_utils
 from mkdocs.config import config_options, Config
 from mkdocs.plugins import BasePlugin
 
-class YourPlugin(BasePlugin):
+
+class Exercises(BasePlugin):
 
     config_scheme = (
         ('param', config_options.Type(str, default='')),
@@ -31,7 +32,7 @@ class YourPlugin(BasePlugin):
 
     def on_env(self, env, config, files):
         return env
-    
+
     def on_config(self, config):
         return config
 
@@ -43,10 +44,10 @@ class YourPlugin(BasePlugin):
 
     def on_template_context(self, context, template_name, config):
         return context
-    
+
     def on_post_template(self, output_content, template_name, config):
         return output_content
-    
+
     def on_pre_page(self, page, config, files):
         return page
 
@@ -64,4 +65,3 @@ class YourPlugin(BasePlugin):
 
     def on_post_page(self, output_content, page, config):
         return output_content
-
