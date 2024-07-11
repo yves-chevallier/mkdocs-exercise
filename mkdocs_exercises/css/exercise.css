@@ -281,7 +281,7 @@
 
 .text-with-gap {
     line-height: 1.5;
-    border-bottom: 1px solid #000;
+    border-bottom: 1.5px solid #bfbfc0;
     margin-left: 0.4em;
     margin-right: 0.4em;
     /* background-color: #6b9ed133; */
@@ -292,12 +292,14 @@
 
 .text-with-gap.good {
     background-color: #64d41933;
-    color: #224908
+    color: #224908;
+    border-color: #224908;
 }
 
 .text-with-gap.bad {
     background-color: #ff3e3e33;
-    color: #831f1f
+    color: #831f1f;
+    border-color: #831f1f;
 }
 
 .text-with-gap input[type="text"] {
@@ -307,7 +309,7 @@
     font-size: inherit;
     line-height: inherit;
     border: none;
-    border-bottom: 1px solid #000;
+    border-bottom: 2px solid #bfbfc0;
     outline: none;
     text-align: center;
     margin: 0 2px; /* Espacement autour du champ de saisie */

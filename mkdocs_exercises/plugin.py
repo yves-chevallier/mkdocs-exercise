@@ -145,23 +145,19 @@ class Exercises(BasePlugin[MyPluginConfig]):
                 li_content = ''.join(map(str, li.contents))
                 checked = False
                 if '[x]' in li_content:
-                    log.error("Found checked")
                     checked = True
                     li_content = li_content.replace('[x]', '')
                 if '[ ]' in li_content:
-                    log.error("Found unchecked")
                     checked = False
                     li_content = li_content.replace('[ ]', '')
 
                 rendered = self.multiple_choice_template.render(content=li_content,checked=False,good=checked)
 
                 new_li = BeautifulSoup(rendered, 'html.parser')
-                #li.replace_with(new_li)
                 li.insert_after(new_li)
                 li.decompose()
 
     def applyFillInTheBlank(self, element):
-        log.error("TEXT" + str(element))
 
         template = jinja2.Template('<input type="text" style="width: {{width}}ch;" class="text-with-gap" answer="{{answer}}"/>')
 
