@@ -27,8 +27,8 @@
 
     How many legs doesn't a duck have ?
 
-    - [x] 2
-    - [ ] 4
+    - [ ] 2
+    - [x] 4
     - [x] 5
 
     !!! solution
@@ -50,7 +50,7 @@
 
         This is a classic poem.
 
-    ??? solution
+    !!! solution
 
         This poem is a classic from the movie "Four Weddings and a Funeral". Andie MacDowell's character recites it to Hugh Grant's character.
 
@@ -61,24 +61,3 @@
     Fill in the blanks:
 
     > The path of the righteous man is beset on all sides by the inequities of the {{selfish}} and the tyranny of evil men. Blessed is he who, in the name of charity and good will, shepherds the {{weak}} through the valley of darkness, for he is truly his brother's keeper and the {{finder}} of lost children. And I will strike down upon thee with great vengeance and furious anger those who attempt to poison and destroy my {{brothers}}. And you will know my name is the {{Lord}} when I lay my vengeance upon thee.
-
-!!! exercise "Sequence"
-
-    In the following sequence diagram, we are Alice that greets John and John that greets Bob. Fill the names of the people in the diagram:
-
-    ``` mermaid
-    sequenceDiagram
-    autonumber
-    participant A as {{Alice Wonderland}}
-    participant J as John
-    participant B as Bob
-
-    A->>J: Hello John, how are you?
-    loop Healthcheck
-        J->>J: Fight against hypochondria
-    end
-    Note right of J: Rational thoughts!
-    J-->>A: Great!
-    J->>B: How about you?
-    B-->>J: Jolly good!
-    ```

@@ -63,10 +63,7 @@ class Exercises(BasePlugin[MyPluginConfig]):
         return files
 
     def on_nav(self, nav, config, files):
-        log.error(nav.pages)
         for page in nav.pages:
-            log.error(page.title)
-            log.error(page.url)
             page.exercises_id = 1
 
         return nav
@@ -78,7 +75,6 @@ class Exercises(BasePlugin[MyPluginConfig]):
 
         markdown = re.sub(r'((?:\?\?\?|!!!)\s+exercise[^"]+")([^"]+)(")', add_exercise_title, markdown)
         markdown = markdown.replace('function', 'pomme')
-        log.error(markdown)
 
         return markdown
 
@@ -94,6 +90,13 @@ class Exercises(BasePlugin[MyPluginConfig]):
             div['class'] += ['solution', 'hidden']
 
         for div in soup.find_all('div', class_='exercise'):
+            # Replace text in .admonition-title with an additional <span> element
+            element = div.find('p', class_='admonition-title')
+
+            text = element.get_text()
+            element.clear()
+            element.append(BeautifulSoup(f'{text}<span class="exercise-title"></span>', 'html.parser'))
+
             # Detect exercise type based on content
             exercise_type = []
             if re.findall(r'\[x\]', str(div)):
@@ -101,7 +104,6 @@ class Exercises(BasePlugin[MyPluginConfig]):
             if re.findall(r'\{\{[^\{]+?\}\}|\[\[[^\{]+?\]\]', str(div)):
                 exercise_type += ['fill-in-the-blank']
             if len(exercise_type) > 1:
-                log.error(str(div))
                 log.error(f"Unable to detect exercise type")
             log.warning(f"Detected exercise type: {exercise_type}")
 
@@ -114,17 +116,7 @@ class Exercises(BasePlugin[MyPluginConfig]):
 
 
         html = str(soup)
-
-        # colorful_html = highlight(html, HtmlLexer(), TerminalFormatter())
-
-        # log.error(colorful_html)
         return html
-
-    def on_post_page(self, output, page, config, **kwargs) -> str | None:
-        # log.error('############################# on_post_page')
-        # colorful_html = highlight(output, HtmlLexer(), TerminalFormatter())
-        # log.error(colorful_html)
-        return output
 
     def on_post_build(self, config):
         # Copier le fichier CSS dans le répertoire de sortie
@@ -137,7 +129,6 @@ class Exercises(BasePlugin[MyPluginConfig]):
         static_dir = os.path.join(os.path.dirname(__file__), 'js')
         css_file = os.path.join(static_dir, 'exercise.js')
         if os.path.exists(css_file):
-            log.error("Copying exercise.js")
             shutil.copy(css_file, os.path.join(output_dir, 'exercise.js'))
 
     def applyMultipleChoice(self, div):
@@ -188,7 +179,8 @@ class Exercises(BasePlugin[MyPluginConfig]):
                     new_soup = BeautifulSoup(new_content, 'html.parser')
                     new_contents.extend(new_soup.contents)
                 elif isinstance(content, Tag):
-                    replace_placeholders(content)
+                    if content.name not in ['code']:
+                        replace_placeholders(content)
                     new_contents.append(content)
                 else:
                     new_contents.append(content)
@@ -200,4 +192,7 @@ class Exercises(BasePlugin[MyPluginConfig]):
 
         replace_placeholders(element)
 
-        log.error("TEXT" + str(element))
+        # Add a button in the last position in element
+        template = jinja2.Template('<p class="align--right"><button class="md-button md-button--primary md-button--small exercise-submit">Valider</button></p>')
+        new_button = BeautifulSoup(template.render(), 'html.parser')
+        element.append(new_button)

@@ -9,6 +9,9 @@ theme:
       exercise: octicons/mortar-board-16
       solution: octicons/trophy-16
       hint: octicons/light-bulb-16
+      foobar: octicons/check-circle-16
+      failure: octicons/x-circle-16
+      reload: octicons/sync-16
 markdown_extensions:
   - admonition
   - pymdownx.details

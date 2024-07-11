@@ -72,7 +72,7 @@
 }
 
 .exercise li input[type="checkbox"]:disabled {
-    opacity: 0.5;
+    opacity: 0.2;
     pointer-events: none;
 }
 
@@ -291,11 +291,13 @@
 }
 
 .text-with-gap.good {
-    background-color: #28a74533;
+    background-color: #64d41933;
+    color: #224908
 }
 
 .text-with-gap.bad {
-    background-color: #dc354533;
+    background-color: #ff3e3e33;
+    color: #831f1f
 }
 
 .text-with-gap input[type="text"] {
@@ -315,4 +317,75 @@
 
 .text-with-gap input[type="text"]:focus {
     border-bottom: 2px solid #007BFF;
+}
+
+.admonition.exercise.pass > .admonition-title::after {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    right: 1em;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgb(70, 167, 61);
+    -webkit-mask-image: var(--md-admonition-icon--foobar);
+    mask-image: var(--md-admonition-icon--foobar);
+    -webkit-mask-size: cover;
+    mask-size: cover;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.admonition.exercise.fail > .admonition-title::after {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    right: 1em;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgb(167, 61, 61);
+    -webkit-mask-image: var(--md-admonition-icon--failure);
+    mask-image: var(--md-admonition-icon--failure);
+    -webkit-mask-size: cover;
+    mask-size: cover;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.admonition.exercise.pass .exercise-title::after,
+.admonition.exercise.fail .exercise-title::after {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    right: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgb(0, 0, 0);
+    -webkit-mask-image: var(--md-admonition-icon--reload);
+    mask-image: var(--md-admonition-icon--reload);
+    -webkit-mask-size: cover;
+    mask-size: cover;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    background-repeat: no-repeat;
+    background-size: cover;
+    cursor: pointer;
+}
+
+.md-button--small {
+    font-size: 12px; /* Ajustez la taille de la police */
+    padding: 4px 8px; /* Ajustez les marges internes */
+}
+
+.align--right {
+    text-align: right;
 }
