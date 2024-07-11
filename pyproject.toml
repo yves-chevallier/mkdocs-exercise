@@ -6,17 +6,6 @@ authors = ["Yves Chevallier <yves.chevallier@heig-vd.ch>"]
 license = "MIT"
 readme = "README.md"
 
-[tool.poetry.dependencies]
-python = "^3.10"
-pymdown-extensions = "^10.8.1"
-mkdocs-material = "^9.5.28"
-mkdocs = "^1.6"
-
-[tool.poetry.group.dev.dependencies]
-watchdog = "^4.0.1"
-babel = "^2.15.0"
-
-[tool.poetry.classifiers]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -29,6 +18,16 @@ classifiers = [
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.10"
 ]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pymdown-extensions = "^10.8.1"
+mkdocs-material = "^9.5.28"
+mkdocs = "^1.6"
+
+[tool.poetry.group.dev.dependencies]
+watchdog = "^4.0.1"
+babel = "^2.15.0"
 
 [tool.poetry.plugins."mkdocs.plugins"]
 "exercises" = "mkdocs_exercises.plugin:Exercises"
