@@ -1,137 +1,136 @@
+""" MkDocs plugin to add interactive exercises to the documentation. """
 import os
-import sys
+import re
 import shutil
-from timeit import default_timer as timer
-from datetime import datetime, timedelta
-
-from mkdocs import utils as mkdocs_utils
-from mkdocs.config import config_options, Config
-from mkdocs.plugins import BasePlugin
+import gettext
+from pathlib import Path
+import jinja2
+from mkdocs.plugins import BasePlugin, get_plugin_logger
 from mkdocs.config import base, config_options as c
 from mkdocs.config.base import Config as MkDocsConfig
-from mkdocs.plugins import get_plugin_logger
-from mkdocs.structure.files import Files
-import re
-
-from pygments import highlight
-from pygments.lexers import HtmlLexer
-from pygments.formatters import TerminalFormatter
-import colorama
-
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString, Tag
-import jinja2
 
 log = get_plugin_logger(__name__)
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
+LOCALES_DIR = os.path.join(os.path.dirname(__file__), 'locales')
+
 
 class MyPluginConfig(base.Config):
-    foo = c.Type(str, default='a default value')
-    bar = c.Type(int, default=0)
-    baz = c.Type(bool, default=True)
+    exercise_label = c.Type(str, default='')
+    submit_label = c.Type(str, default='')
+
 
 class Exercises(BasePlugin[MyPluginConfig]):
-
-    config_scheme = (
-        ('param', config_options.Type(str, default='')),
-    )
-
     def __init__(self):
+        self.current_exercise_id = 0
         self.enabled = True
+        self.static_files = []
         self.total_time = 0
+        self._ = gettext.gettext
+        self.re_admonition = re.compile(r'((?:\?\?\?|!!!)\s+exercise[^"]+")([^"]+)(")')
+        self.re_placeholder = re.compile(r'\{\{([^\{]+?)\}\}')
+
+    def _set_language(self, lang):
+        """Set the language for translations."""
+        language_code = lang if isinstance(lang, str) else lang.language
+
+        try:
+            translation = gettext.translation('messages',
+                                              localedir=LOCALES_DIR,
+                                              languages=[language_code])
+            translation.install()
+            self._ = translation.gettext
+        except FileNotFoundError:
+            gettext.install('messages', localedir=LOCALES_DIR)
+            self._ = gettext.gettext
+
+    def _register_static_files(self, config):
+        """Find static files to be copied later."""
+        path = Path(__file__).parent / 'static'
+        for file in path.iterdir():
+            if not file.is_file():
+                continue
+            self.static_files.append(file)
+            mapping = [
+                ('.css', 'extra_css'),
+                ('.js', 'extra_javascript')]
+            for ext, key in mapping:
+                if file.suffix == ext:
+                    if key not in config:
+                        config[key] = []
+                    config[key].append(file.name)
 
     def on_config(self, config: MkDocsConfig):
-        css_file = 'exercise.css'
-        if 'extra_css' not in config:
-            config['extra_css'] = []
-        config['extra_css'].append(css_file)
+        """ Identify static files to be copied later, update the config
+        to include extra js and css files.
+        """
+        # Configure the language
+        lang = config['theme']['locale'] if 'locale' in config['theme'] else 'en'
+        self._set_language(lang)
 
-        js_file = 'exercise.js'
-        if 'extra_javascript' not in config:
-            config['extra_javascript'] = []
-        config['extra_javascript'].append(js_file)
+        # Process the plugin configuration
+        if self.config.exercise_label == '':
+            self.config.exercise_label = self._('Exercise')
+        if self.config.submit_label == '':
+            self.config.submit_label = self._('Submit')
+
+        # Process extra files
+        self._register_static_files(config)
 
         return config
 
-    def on_files(self, files, config):
-        # for file in files:
-        #     if '.md' in file.src_path:
-        #         file.content_string = file.content_string.replace('function', 'chocolat')
-        #         print(file.content_string)
-        # print('on_files', files)
-        return files
+    def on_post_build(self, config: MkDocsConfig):
+        """ Copy static files to the site directory.
+        """
+        output_dir = Path(config['site_dir'])
+        for file in self.static_files:
+            log.debug(f"Copying {file.name} to {output_dir.name}")
+            shutil.copy(file, output_dir / file.name)
 
-    def on_nav(self, nav, config, files):
-        for page in nav.pages:
-            page.exercises_id = 1
-
-        return nav
-
-    def on_page_markdown(self, markdown, page, config, files):
+    def on_page_markdown(self, markdown: str, page, config, files):
+        """ Prefix the exercises with the exercise label. """
         def add_exercise_title(match):
-            page.exercises_id += 1
-            return f'{match.group(1)}Exercise {page.exercises_id}: {match.group(2)}{match.group(3)}'
-
-        markdown = re.sub(r'((?:\?\?\?|!!!)\s+exercise[^"]+")([^"]+)(")', add_exercise_title, markdown)
-        markdown = markdown.replace('function', 'pomme')
-
-        return markdown
+            self.current_exercise_id += 1
+            return f'{match.group(1)}{self.config.exercise_label}: {match.group(2)}{match.group(3)}'
+        return self.re_admonition.sub(add_exercise_title, markdown)
 
     def on_page_content(self, html, page, config, files):
-        html = html.replace('pomme', 'vanille')
-
-
-
-
+        """ Apply the exercise types to the content. """
         soup = BeautifulSoup(html, 'html.parser')
 
-        for div in soup.find_all('div', class_='admonition solution'):
-            div['class'] += ['solution', 'hidden']
-
         for div in soup.find_all('div', class_='exercise'):
-            # Replace text in .admonition-title with an additional <span> element
+            # Add span to display reset button
             element = div.find('p', class_='admonition-title')
-
-            text = element.get_text()
+            exercise_name = element.get_text()
             element.clear()
-            element.append(BeautifulSoup(f'{text}<span class="exercise-title"></span>', 'html.parser'))
+            element.append(BeautifulSoup(
+                f'{exercise_name}<span class="exercise-title"></span>', 'html.parser'))
 
             # Detect exercise type based on content
             exercise_type = []
-            if re.findall(r'\[x\]', str(div)):
+            if re.findall(r'\[[x ]\]', str(div)):
                 exercise_type += ['checkbox']
             if re.findall(r'\{\{[^\{]+?\}\}|\[\[[^\{]+?\]\]', str(div)):
                 exercise_type += ['fill-in-the-blank']
             if len(exercise_type) > 1:
                 log.error(f"Unable to detect exercise type")
-            log.warning(f"Detected exercise type: {exercise_type}")
-
             div['class'] += exercise_type
 
+            # Apply the exercise type
             if 'checkbox' in exercise_type:
-                self.applyMultipleChoice(div)
+                # Detect if the exercise is missing correct choices
+                if not re.findall(r'\[x\]', str(div)):
+                    log.error(f"Exercise '{exercise_name}' in file '{page.file.name}' is missing correct choices")
+                self.apply_multiple_choice_type(div)
             if 'fill-in-the-blank' in exercise_type:
-                self.applyFillInTheBlank(div)
+                self.apply_fill_in_the_blank_type(div)
 
+        return str(soup)
 
-        html = str(soup)
-        return html
-
-    def on_post_build(self, config):
-        # Copier le fichier CSS dans le répertoire de sortie
-        output_dir = config['site_dir']
-        static_dir = os.path.join(os.path.dirname(__file__), 'css')
-        css_file = os.path.join(static_dir, 'exercise.css')
-        if os.path.exists(css_file):
-            shutil.copy(css_file, os.path.join(output_dir, 'exercise.css'))
-
-        static_dir = os.path.join(os.path.dirname(__file__), 'js')
-        css_file = os.path.join(static_dir, 'exercise.js')
-        if os.path.exists(css_file):
-            shutil.copy(css_file, os.path.join(output_dir, 'exercise.js'))
-
-    def applyMultipleChoice(self, div):
+    def apply_multiple_choice_type(self, div):
+        """ Multiple choice exercise type """
         if not hasattr(self, 'multiple_choice_template'):
             template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
             template_env = jinja2.Environment(loader=template_loader)
@@ -141,37 +140,34 @@ class Exercises(BasePlugin[MyPluginConfig]):
         for ul in div.find_all('ul'):
             ul['class'] = 'exercise-list'
             for li in ul.find_all('li'):
-
                 li_content = ''.join(map(str, li.contents))
-                checked = False
-                if '[x]' in li_content:
-                    checked = True
-                    li_content = li_content.replace('[x]', '')
-                if '[ ]' in li_content:
-                    checked = False
-                    li_content = li_content.replace('[ ]', '')
-
-                rendered = self.multiple_choice_template.render(content=li_content,checked=False,good=checked)
+                is_correct_choice = True if '[x]' in li_content else False
+                li_content = re.sub(r'\[(x| )\]', '', li_content)
+                rendered = self.multiple_choice_template.render(
+                    content=li_content,
+                    checked=False,
+                    good=is_correct_choice)
 
                 new_li = BeautifulSoup(rendered, 'html.parser')
                 li.insert_after(new_li)
                 li.decompose()
 
-    def applyFillInTheBlank(self, element):
-
-        template = jinja2.Template('<input type="text" style="width: {{width}}ch;" class="text-with-gap" answer="{{answer}}"/>')
+    def apply_fill_in_the_blank_type(self, element):
+        """ Fill in the blank exercise type """
+        template = jinja2.Template(
+            '<input type="text" style="width: {{width}}ch;" '
+            'class="text-with-gap" answer="{{answer}}"/>'
+        )
 
         def add_tag(match):
-            return template.render(width=len(match.group(1))+2, answer=match.group(1))
+            return template.render(
+                width=len(match.group(1))+2, answer=match.group(1))
 
         def replace_placeholders(element):
-            # Liste temporaire pour stocker les nouvelles parties
             new_contents = []
-
             for content in element.contents:
                 if isinstance(content, NavigableString):
-                    new_content = re.sub(r'\{\{([^\{]+?)\}\}', add_tag, content)
-                    new_content = re.sub(r'\[\[([^\{]+?)\]\]', add_tag, new_content)
+                    new_content = self.re_placeholder.sub(add_tag, content)
                     new_soup = BeautifulSoup(new_content, 'html.parser')
                     new_contents.extend(new_soup.contents)
                 elif isinstance(content, Tag):
@@ -180,8 +176,6 @@ class Exercises(BasePlugin[MyPluginConfig]):
                     new_contents.append(content)
                 else:
                     new_contents.append(content)
-
-            # Vider l'élément original et ajouter les nouvelles parties
             element.clear()
             for new_content in new_contents:
                 element.append(new_content)
@@ -189,6 +183,11 @@ class Exercises(BasePlugin[MyPluginConfig]):
         replace_placeholders(element)
 
         # Add a button in the last position in element
-        template = jinja2.Template('<p class="align--right"><button class="md-button md-button--primary md-button--small exercise-submit">Valider</button></p>')
+        template = jinja2.Template(
+            '<p class="align--right">'
+            '<button class="md-button md-button--primary md-button--small '
+            'exercise-submit">'
+            f'{self.config.submit_label}'
+            '</button></p>')
         new_button = BeautifulSoup(template.render(), 'html.parser')
         element.append(new_button)

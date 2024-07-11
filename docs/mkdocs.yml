@@ -1,9 +1,27 @@
-site_name: Demo Exercises
+site_name: MkDocs Exercises Plugin
 plugins:
   - exercises
-  - enumerate-headings
+  - search
+repo_url: https://github.com/yves-chevallier/mkdocs-exercises
 theme:
   name: material
+  locale: en
+  palette:
+    - scheme: default
+      media: "(prefers-color-scheme: light)"
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      media: "(prefers-color-scheme: dark)"
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - search.highlight
+    - search.share
+    - search.suggest
+    - header.autohide
   icon:
     admonition:
       exercise: octicons/mortar-board-16
@@ -27,5 +45,6 @@ markdown_extensions:
   - pymdownx.caret
   - pymdownx.mark
   - pymdownx.tilde
+  - pymdownx.blocks.html
 watch:
   - ../mkdocs_exercises

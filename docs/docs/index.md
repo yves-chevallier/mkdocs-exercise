@@ -1,6 +1,27 @@
-# Demo Exercises
+# Introduction
 
-Here a few examples of exercises you can create with this plugin.
+This plugin allows you to create exercises in your markdown files. The exercises can be of different types:
+
+- Multiple choice questions
+- Fill in the blanks
+- C/C++ Code (coming soon)
+
+!!! warning
+
+    This plugin is still in development. The syntax and features may change in the future. It currently only supports `material` theme.
+
+## Configuration
+
+To install the plugin, you need to add it to the `plugins` section of your `mkdocs.yml` file:
+
+```yaml
+plugins:
+  - exercise:
+      exercise_label: 'Exercise'
+      submit_label: 'Check'
+```
+
+If the labels are not provided, the default values are used translated to the current language. Currently only English, French and Spanish are supported.
 
 ## Multiple choice questions
 

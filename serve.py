@@ -1,16 +1,16 @@
+""" Helper script to automatically restart the mkdocs server when a file changes. """
 import os
-import sys
 import signal
 import subprocess
 import time
 from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler, FileSystemEvent
+from watchdog.events import FileSystemEventHandler
+
 
 class MyHandler(FileSystemEventHandler):
     def __init__(self, command):
         self.command = command
         self.process = subprocess.Popen(self.command, shell=True, preexec_fn=os.setsid)
-        self.last_restart_time = time.time()
 
     def on_any_event(self, event):
         if self.should_restart(event):
@@ -18,23 +18,15 @@ class MyHandler(FileSystemEventHandler):
             self.restart_process()
 
     def should_restart(self, event):
-        # Ignore __pycache__ files and directories
         if "__pycache__" in event.src_path:
             return False
-
-        # Add a cooldown to prevent too frequent restarts
-        current_time = time.time()
-        if current_time - self.last_restart_time < 2:  # Cooldown period in seconds
-            return False
-
-        self.last_restart_time = current_time
         return True
 
     def restart_process(self):
-        if self.process.poll() is None:  # Check if the process is still running
+        if self.process.poll() is None:
             os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
-            self.process.wait()  # Ensure the process has terminated
-        time.sleep(1)  # Optional: Add a short delay to ensure the port is freed
+            self.process.wait()
+        time.sleep(1)
         self.process = subprocess.Popen(self.command, shell=True, preexec_fn=os.setsid)
 
 if __name__ == "__main__":

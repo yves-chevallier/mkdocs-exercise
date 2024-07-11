@@ -46,59 +46,144 @@ We could also add a search bar to search for exercises by name.
 
 ## Notes
 
-### Mermaid overlay
+### Other Extensions
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SVG with Input</title>
-    <style>
-        .container {
-            position: relative;
-            width: 300px; /* Set the width you want */
-            height: 200px; /* Set the height you want */
-        }
-        svg {
-            width: 100%;
-            height: 100%;
-        }
-        .input-overlay {
-            position: absolute;
-            width: 100px; /* Set the width you want for the input */
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <svg id="svg-element" viewBox="0 0 300 200">
-            <rect x="0" y="0" width="300" height="200" fill="lightgrey" />
-            <text x="50" y="30" font-family="Arial" font-size="24">
-                Your <tspan id="tspan-element">SVG</tspan> Content
-            </text>
-        </svg>
-        <input class="input-overlay" type="text" placeholder="Type here" id="input-overlay" />
-    </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const tspanElement = document.getElementById('tspan-element');
-            const inputOverlay = document.getElementById('input-overlay');
+#### AllNumbering
 
-            const svgElement = document.getElementById('svg-element');
-            const svgRect = svgElement.getBoundingClientRect();
-            const tspanRect = tspanElement.getBoundingClientRect();
+MkDocs isn't quite ready for numbering elements such as:
 
-            // Calculate the position relative to the container
-            const top = tspanRect.top - svgRect.top;
-            const left = tspanRect.left - svgRect.left;
+- Sections / Headings
+- Figures (`fig`)
+- Tables (`tbl`)
+- Codes (`code`)
+- Admonitions / custom admonitions (`note`, `warning`, `tip`, `important`, `caution`, `danger`, `error`)
+- Math equations (`eq`)
 
-            // Position the input element
-            inputOverlay.style.top = `${top}px`;
-            inputOverlay.style.left = `${left}px`;
-        });
-    </script>
-</body>
-</html>
+I see different numbering strategies:
+
+1. Unique numbering for each type of element from 1 to N. All equations in all pages would be numbered from 1 to N, all figures from 1 to N, etc.
+2. If section heading is enabled, then the numbers can be hierarchical. For instance, on section 2.2.3 the first equation would be numbered 2.1 and the second equation in the same section would be numbered 2.2. The number takes the chapter number and the element number.
+
+Refs can be made to elements such as
+
+```md
+See figure @fig:myfigure.
+
+![figure](figure.png){#fig:myfigure}
+```
+
+There are already some work on this:
+
+- https://git.sr.ht/~ferruck/yafg which is obsolete
+- https://github.com/flywire/caption which wasn't updated during the last year
+- https://github.com/timvink/mkdocs-enumerate-headings-plugin which is only for headings
+
+```yml
+plugins:
+  - allnumbering:
+      enabled: true
+      toc-depth: 0 # Up to which level the table of contents should be enumerated
+      strict: true # Raise error if the numbering is not correct
+      increment_across_pages: true # If the numbering should be incremented across pages
+      restart_increment_after:
+        - second_section.md
+
+      equations:
+        enabled: true
+        style: [(arabic), roman, alphabetic] # 1.2.3, i.ii.iii, A.B.C
+        # 0 Follow section headings from section level 0 (1.N)
+        # 1 Follow section headings from section level 1 (1.2.N)
+        # ...
+        # false: flat numbering (default)
+        hierarchical-depth: 0
+      figures: true
+      tables: true
+      codes: true
+      admonitions:
+        types: [exercises] # List of custom admonitions that need numbering
+      headings:
+        style: arabic
+        depth: 0 # Up to which level the headings should be enumerated
+```
+
+How to handle it in Markdown?
+
+````md
+# My section {#sec:mysection}
+
+![caption](image.png){ #fig:myfigure }
+
+![caption]() { #tbl:mytable }
+
+| A | B | C |
+|---|---|---|
+| 1 | 2 | 3 |
+
+```c { #code:myequation }
+int main() { printf("Hello World!\n"); }
+````
+
+!!! note "My note" { #note:myadmonition }
+    This is a note.
+
+Table of figures / content / equations
+
+```md
+# Table of figures
+
+{{{ listoffigures }}}
+```
+
+For this exercise plugin, then no need to number the exercises, the all-numbering plugin will take care of it.
+
+The plugin could have two steps. First, altering the markdown with numbers, to be able to get output from pandoc for later processing. Second, take care of the presentation of the numbers in the html output.
+
+#### Multicolumns
+
+It would be nice to allow certain elements to be multicolumns, such as long lists. This would be an extension to the `pymdownx.blocks`
+
+```markdown
+{{{ multicolumn | 2
+
+- [ ] 1
+- [ ] 2
+- [ ] 3
+- [ ] 4
+
+}}}
+```
+
+#### LaTeX directives
+
+When exporting in LaTeX, it can be useful to have some directives to change the layout of the document. For instance, we could have a directive to change the layout to two columns.
+
+```markdown
+{{{ latex | \begin{multicols}{2}
+- [ ] {{{ latex | \bfseries }}}1
+- [ ] 2
+}}}
+```
+
+#### Export to LaTeX ?
+
+There is no plugin or extension to export to LaTeX. This could be useful for scientific papers or books. The plugin could be used to generate the LaTeX code and then the user could compile it with `pdflatex`.
+
+There is already a plugin to export to PDF:
+
+- https://github.com/alexandre-perrin/mkdocs-pandoc-plugin (3 years ago)
+- https://github.com/HaoLiuHust/mkdocs-mk2pdf-plugin (5 years ago)
+
+The goal is to simply parse Markdown using pandoc to LaTeX and support the custom extensions. This plugin should support additional LaTeX directives.
+
+```md
+@@ latex | \begin{multicols}{2}
+@@ \end{multicols}
+
+or inline
+
+@@ latex | \textbf{ @@foobar@@ latex | } @@
+
+or
+
+@@ \frontmatter @@
 ```
