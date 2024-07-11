@@ -24,6 +24,7 @@ python = "^3.10"
 pymdown-extensions = "^10.8.1"
 mkdocs-material = "^9.5.28"
 mkdocs = "^1.6"
+beautifulsoup4 = "^4.12.3"
 
 [tool.poetry.group.dev.dependencies]
 watchdog = "^4.0.1"
