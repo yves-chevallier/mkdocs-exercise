@@ -5,7 +5,7 @@ description = "Provide Exercises to Mkdocs"
 authors = ["Yves Chevallier <yves.chevallier@heig-vd.ch>"]
 license = "MIT"
 readme = "README.md"
-
+packages = [{ include = "mkdocs_plugin_exercises" }]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -30,7 +30,7 @@ watchdog = "^4.0.1"
 babel = "^2.15.0"
 
 [tool.poetry.plugins."mkdocs.plugins"]
-"exercises" = "mkdocs_exercises.plugin:Exercises"
+"exercises" = "mkdocs_plugin_exercises.plugin:Exercises"
 
 [build-system]
 requires = ["poetry-core"]
