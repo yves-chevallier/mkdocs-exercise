@@ -46,5 +46,3 @@ markdown_extensions:
   - pymdownx.mark
   - pymdownx.tilde
   - pymdownx.blocks.html
-watch:
-  - ../mkdocs_exercises
