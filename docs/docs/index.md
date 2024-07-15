@@ -23,6 +23,8 @@ plugins:
 
 If the labels are not provided, the default values are used translated to the current language. Currently only English, French and Spanish are supported.
 
+If instant loading is enabled (`theme.features.navigation.instant`). Handlers are added dynamically to the document using `document$`.
+
 ## Multiple choice questions
 
 Adding the `multicolumn` keyword to the exercise block will allow displaying the choices in multiple columns.

@@ -1,110 +1,108 @@
-console.log("Hello from exercise.js");
+const toggleVisibility = (element, displayStyle) => {
+    if (element) element.style.display = displayStyle;
+};
 
-document.addEventListener("DOMContentLoaded", () => {
+const resetExercise = (exercise) => {
+    exercise.querySelectorAll('input[type="checkbox"], input[type="text"]').forEach(input => {
+        input.checked = false;
+        input.disabled = false;
+        input.value = '';
+    });
+    exercise.querySelectorAll('input[type="text"]').forEach(input => {
+        input.classList.remove('good', 'bad');
+    });
+    exercise.classList.remove('pass', 'fail');
+    toggleVisibility(exercise.querySelector('.solution'), 'none');
+    toggleVisibility(exercise.querySelector('.hint'), 'block');
+    toggleVisibility(exercise.querySelector('button.exercise-submit'), 'inline');
+};
 
-    const toggleVisibility = (element, displayStyle) => {
-        if (element) element.style.display = displayStyle;
-    };
+const handleCheckboxChange = (exercise, event, ul) => {
+    if (!event.target.matches('input[type="checkbox"]')) return;
 
-    const resetExercise = (exercise) => {
-        exercise.querySelectorAll('input[type="checkbox"], input[type="text"]').forEach(input => {
-            input.checked = false;
-            input.disabled = false;
-            input.value = '';
-        });
-        exercise.querySelectorAll('input[type="text"]').forEach(input => {
-            input.classList.remove('good', 'bad');
-        });
-        exercise.classList.remove('pass', 'fail');
-        toggleVisibility(exercise.querySelector('.solution'), 'none');
-        toggleVisibility(exercise.querySelector('.hint'), 'block');
-        toggleVisibility(exercise.querySelector('button.exercise-submit'), 'inline');
-    };
+    const isGood = event.target.classList.contains('good');
+    const allGoodCheckboxes = ul.querySelectorAll('input.good');
+    const allGoodCheckboxesChecked = ul.querySelectorAll('input.good:checked');
+    const solution = exercise.querySelector('.solution');
 
-    const handleCheckboxChange = (exercise, event, ul) => {
-        if (!event.target.matches('input[type="checkbox"]')) return;
+    if (allGoodCheckboxes.length === allGoodCheckboxesChecked.length) {
+        exercise.classList.add('pass');
+        ul.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.disabled = true);
+        solution.style.display = 'block';
+        hints = exercise.querySelectorAll('.hint');
+        hints.forEach(hint => hint.style.display = 'none');
+    }
+    if (event.target.checked && !isGood) {
+        ul.querySelectorAll('input.good').forEach(checkbox => checkbox.checked = true);
+        exercise.classList.add('fail');
+        ul.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.disabled = true);
+        solution.style.display = 'block';
+        hints = exercise.querySelectorAll('.hint');
+        hints.forEach(hint => hint.style.display = 'none');
+    }
+};
 
-        const isGood = event.target.classList.contains('good');
-        const allGoodCheckboxes = ul.querySelectorAll('input.good');
-        const allGoodCheckboxesChecked = ul.querySelectorAll('input.good:checked');
-        const solution = exercise.querySelector('.solution');
+const parseRegexString = (input) => {
+    const delimiter = input[0];
 
-        console.log(`isGood: ${isGood}, allGoodCheckboxes: ${allGoodCheckboxes.length}, allGoodCheckboxesChecked: ${allGoodCheckboxesChecked.length}`);
-        if (allGoodCheckboxes.length === allGoodCheckboxesChecked.length) {
-            exercise.classList.add('pass');
-            ul.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.disabled = true);
-            solution.style.display = 'block';
-            exercise.querySelector('.hint').style.display = 'none';
-        }
-        if (event.target.checked && !isGood) {
-            ul.querySelectorAll('input.good').forEach(checkbox => checkbox.checked = true);
-            exercise.classList.add('fail');
-            ul.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.disabled = true);
-            solution.style.display = 'block';
-            exercise.querySelector('.hint').style.display = 'none';
-        }
-    };
+    const sentinel = '§§§';
+    input = input.replace(RegExp(`\\\\${delimiter}`, 'g'), sentinel);
+    let parts = input.split(delimiter);
+    parts = parts.map(part => part.replaceAll(sentinel, `\\${delimiter}`));
 
-    const parseRegexString = (input) => {
-        const delimiter = input[0];
+    const pattern = parts[1];
+    const flags = parts.slice(3).join(delimiter);
 
-        const sentinel = '§§§';
-        input = input.replace(RegExp(`\\\\${delimiter}`, 'g'), sentinel);
-        let parts = input.split(delimiter);
-        parts = parts.map(part => part.replaceAll(sentinel, `\\${delimiter}`));
+    return {regex: RegExp(pattern, flags), replacement: parts[2]};
+}
 
-        const pattern = parts[1];
-        const flags = parts.slice(3).join(delimiter);
+const validateAnswer = (value, answer) => {
+    let isValid = false;
+    if (answer.startsWith('/')) {
+        const {regex, replacement} = parseRegexString(answer);
+        isValid = regex.test(value);
+    } else {
+        isValid = value.trim().toLowerCase() === answer.toLowerCase();
+    }
+    return isValid;
+};
 
-        return {regex: RegExp(pattern, flags), replacement: parts[2]};
+const handleTextInput = (input) => {
+    const answer = input.getAttribute('answer') || input.dataset.solution;
+    input.classList.toggle('good', validateAnswer(input.value, answer));
+    input.classList.remove('bad');
+};
+
+const handleSubmit = (exercise) => {
+    const allInputs = exercise.querySelectorAll('input[type="text"]');
+    const allGoodInputs = exercise.querySelectorAll('input.good');
+
+    if (allInputs.length === allGoodInputs.length) {
+        exercise.classList.add('pass');
+    } else {
+        exercise.classList.add('fail');
     }
 
-    const validateAnswer = (value, answer) => {
-        let isValid = false;
-        if (answer.startsWith('/')) {
-            const {regex, replacement} = parseRegexString(answer);
-            isValid = regex.test(value);
-        } else {
-            isValid = value.trim().toLowerCase() === answer.toLowerCase();
-        }
-        return isValid;
-    };
-
-    const handleTextInput = (input) => {
+    allInputs.forEach(input => {
+        input.disabled = true;
         const answer = input.getAttribute('answer') || input.dataset.solution;
-        input.classList.toggle('good', validateAnswer(input.value, answer));
-        input.classList.remove('bad');
-    };
-
-    const handleSubmit = (exercise) => {
-        const allInputs = exercise.querySelectorAll('input[type="text"]');
-        const allGoodInputs = exercise.querySelectorAll('input.good');
-
-        if (allInputs.length === allGoodInputs.length) {
-            exercise.classList.add('pass');
-        } else {
-            exercise.classList.add('fail');
-        }
-
-        allInputs.forEach(input => {
-            input.disabled = true;
-            const answer = input.getAttribute('answer') || input.dataset.solution;
-            if (!input.value) {
-                if (answer.startsWith('/')) {
-                    const {replacement} = parseRegexString(answer);
-                    input.value = replacement;
-                } else {
-                    input.value = answer;
-                }
+        if (!input.value) {
+            if (answer.startsWith('/')) {
+                const {replacement} = parseRegexString(answer);
+                input.value = replacement;
+            } else {
+                input.value = answer;
             }
-            input.classList.toggle('bad', !validateAnswer(input.value, answer));
-        });
+        }
+        input.classList.toggle('bad', !validateAnswer(input.value, answer));
+    });
 
-        toggleVisibility(exercise.querySelector('.solution'), 'block');
-        toggleVisibility(exercise.querySelector('.hint'), 'none');
-        toggleVisibility(exercise.querySelector('button.exercise-submit'), 'none');
-    };
+    toggleVisibility(exercise.querySelector('.solution'), 'block');
+    toggleVisibility(exercise.querySelector('.hint'), 'none');
+    toggleVisibility(exercise.querySelector('button.exercise-submit'), 'none');
+};
 
+const installHandler = () => {
     document.querySelectorAll('.exercise').forEach(exercise => {
         exercise.querySelector('.exercise-title').addEventListener('click', () => resetExercise(exercise));
     });
@@ -118,4 +116,10 @@ document.addEventListener("DOMContentLoaded", () => {
             input.addEventListener('input', () => handleTextInput(input)));
         exercise.querySelector('button.exercise-submit').addEventListener('click', () => handleSubmit(exercise));
     });
-});
+};
+
+document.addEventListener("DOMContentLoaded", () => installHandler());
+
+// Support for instant feature (navigation.instant)
+if (typeof document$ !== 'undefined')
+    document$.subscribe(installHandler);

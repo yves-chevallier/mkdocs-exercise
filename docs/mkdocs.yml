@@ -22,6 +22,7 @@ theme:
     - search.share
     - search.suggest
     - header.autohide
+    - navigation.instant
   icon:
     admonition:
       exercise: octicons/mortar-board-16

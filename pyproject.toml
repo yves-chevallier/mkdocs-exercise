@@ -29,6 +29,9 @@ beautifulsoup4 = "^4.12.3"
 [tool.poetry.group.dev.dependencies]
 watchdog = "^4.0.1"
 babel = "^2.15.0"
+poetry = "^1.8.3"
+toml = "^0.10.2"
+click = "^8.1.7"
 
 [tool.poetry.plugins."mkdocs.plugins"]
 "exercises" = "mkdocs_plugin_exercises.plugin:Exercises"
