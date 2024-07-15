@@ -17,28 +17,30 @@ const resetExercise = (exercise) => {
     toggleVisibility(exercise.querySelector('button.exercise-submit'), 'inline');
 };
 
+const validateExercise = (exercise, ul, status) => {
+    exercise.classList.add(status ? 'pass' : 'fail');
+    if (!status) {
+        ul.querySelectorAll('input.good').forEach(checkbox => checkbox.checked = true);
+    }
+    const solution = exercise.querySelector('.solution');
+    ul.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.disabled = true);
+    if (solution) solution.style.display = 'block';
+    hints = exercise.querySelectorAll('.hint');
+    hints.forEach(hint => hint.style.display = 'none');
+};
+
 const handleCheckboxChange = (exercise, event, ul) => {
     if (!event.target.matches('input[type="checkbox"]')) return;
 
     const isGood = event.target.classList.contains('good');
     const allGoodCheckboxes = ul.querySelectorAll('input.good');
     const allGoodCheckboxesChecked = ul.querySelectorAll('input.good:checked');
-    const solution = exercise.querySelector('.solution');
 
     if (allGoodCheckboxes.length === allGoodCheckboxesChecked.length) {
-        exercise.classList.add('pass');
-        ul.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.disabled = true);
-        solution.style.display = 'block';
-        hints = exercise.querySelectorAll('.hint');
-        hints.forEach(hint => hint.style.display = 'none');
+        validateExercise(exercise, ul, true);
     }
     if (event.target.checked && !isGood) {
-        ul.querySelectorAll('input.good').forEach(checkbox => checkbox.checked = true);
-        exercise.classList.add('fail');
-        ul.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.disabled = true);
-        solution.style.display = 'block';
-        hints = exercise.querySelectorAll('.hint');
-        hints.forEach(hint => hint.style.display = 'none');
+        validateExercise(exercise, ul, false);
     }
 };
 
@@ -104,7 +106,10 @@ const handleSubmit = (exercise) => {
 
 const installHandler = () => {
     document.querySelectorAll('.exercise').forEach(exercise => {
-        exercise.querySelector('.exercise-title').addEventListener('click', () => resetExercise(exercise));
+        const title = exercise.querySelector('.exercise-title')
+        if (title) {
+            title.addEventListener('click', () => resetExercise(exercise));
+        }
     });
 
     document.querySelectorAll('.exercise.checkbox').forEach(exercise => {
