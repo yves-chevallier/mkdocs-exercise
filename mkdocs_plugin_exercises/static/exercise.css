@@ -71,12 +71,12 @@
     display: none;
 }
 
-.exercise li input[type="checkbox"]:disabled {
+.exercise > li input[type="checkbox"]:disabled {
     opacity: 0.2;
     pointer-events: none;
 }
 
-.exercise li {
+.exercise > li {
     list-style-type: none;
     display: flex;
     align-items: center;
@@ -84,7 +84,7 @@
     box-sizing: border-box;
 }
 
-.exercise li:not(:last-child) {
+.exercise > li:not(:last-child) {
     margin-bottom: 1em;
  }
 
