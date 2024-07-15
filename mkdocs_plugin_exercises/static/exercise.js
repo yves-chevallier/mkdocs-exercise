@@ -118,8 +118,8 @@ const installHandler = () => {
     });
 };
 
-document.addEventListener("DOMContentLoaded", () => installHandler());
-
 // Support for instant feature (navigation.instant)
 if (typeof document$ !== 'undefined')
     document$.subscribe(installHandler);
+else
+    document.addEventListener("DOMContentLoaded", installHandler);
