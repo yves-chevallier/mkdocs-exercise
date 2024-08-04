@@ -137,9 +137,10 @@ class Exercises(BasePlugin[MyPluginConfig]):
             template = template_env.get_template("exercise_item.html")
             self.multiple_choice_template = template
 
-        for ul in div.find_all('ul'):
+        for ul in div.find_all('ul', recursive=False):
             ul['class'] = 'exercise-list'
-            for li in ul.find_all('li'):
+            for li in ul.find_all('li', recursive=False):
+                print(f"li: {li.get_text()}")
                 li_content = ''.join(map(str, li.contents))
                 is_correct_choice = True if '[x]' in li_content else False
                 li_content = re.sub(r'\[(x| )\]', '', li_content)
