@@ -140,7 +140,6 @@ class Exercises(BasePlugin[MyPluginConfig]):
         for ul in div.find_all('ul', recursive=False):
             ul['class'] = 'exercise-list'
             for li in ul.find_all('li', recursive=False):
-                print(f"li: {li.get_text()}")
                 li_content = ''.join(map(str, li.contents))
                 is_correct_choice = True if '[x]' in li_content else False
                 li_content = re.sub(r'\[(x| )\]', '', li_content)
