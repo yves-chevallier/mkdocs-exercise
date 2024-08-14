@@ -1,11 +1,12 @@
 [tool.poetry]
 name = "mkdocs-plugin-exercises"
-version = "0.1.0"
+version = "0.2.0"
 description = "Provide Exercises to Mkdocs"
 authors = ["Yves Chevallier <yves.chevallier@heig-vd.ch>"]
 license = "MIT"
 readme = "README.md"
 packages = [{ include = "mkdocs_plugin_exercises" }]
+keywords = ["mkdocs", "python", "academic", "exercises", "multiple-choice"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -16,7 +17,7 @@ classifiers = [
     "Programming Language :: Python :: 3.4",
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.10"
+    "Programming Language :: Python :: 3.10",
 ]
 
 [tool.poetry.dependencies]
@@ -25,10 +26,10 @@ pymdown-extensions = "^10.8.1"
 mkdocs-material = "^9.5.28"
 mkdocs = "^1.6"
 beautifulsoup4 = "^4.12.3"
+toolz = "^0.12.1"
 
 [tool.poetry.group.dev.dependencies]
 watchdog = "^4.0.1"
-babel = "^2.15.0"
 poetry = "^1.8.3"
 toml = "^0.10.2"
 click = "^8.1.7"

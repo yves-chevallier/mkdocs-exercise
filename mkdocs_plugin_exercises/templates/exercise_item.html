@@ -1,7 +1,7 @@
 <li class="flex-container">
-  <div class="checkbox-wrapper-12" >
+  <div class="exercise-checkbox">
     <div class="cbx">
-      <input id="cbx-12" type="checkbox" {{ 'checked' if checked else '' }} class="{{ 'good' if good else '' }}"/>
+      <input id="cbx-12" type="checkbox" {{ 'checked' if checked else '' }} class="{{ 'good' if good else '' }}" />
       <label for="cbx-12"></label>
       <svg width="15" height="14" viewbox="0 0 15 14" fill="none">
         {% if good %}
@@ -15,7 +15,8 @@
       <defs>
         <filter id="goo-12">
           <fegaussianblur in="SourceGraphic" stddeviation="4" result="blur"></fegaussianblur>
-          <fecolormatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -7" result="goo-12"></fecolormatrix>
+          <fecolormatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -7" result="goo-12">
+          </fecolormatrix>
           <feblend in="SourceGraphic" in2="goo-12"></feblend>
         </filter>
       </defs>
